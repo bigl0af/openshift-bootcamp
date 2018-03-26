@@ -1,0 +1,85 @@
+[OSEv3:children]
+masters
+nodes
+etcd
+#lb
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+openshift_deployment_type=origin
+#openshift_release=v3.6
+
+rhnmirror_chandate=04Oct2017
+
+ansible_ssh_user=root
+openshift_disable_check=docker_storage,disk_availability,memory_availability
+
+openshift_master_identity_providers=[{'name': 'my_ldap_provider', 'challenge': 'true', 'login': 'true', 'kind': 'LDAPPasswordIdentityProvider', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'bindDN': '', 'bindPassword': '', 'ca': '', 'insecure': 'true', 'url': 'ldap://vmwipaapp08-dev.corp.netapp.com:389/cn=users,cn=accounts,dc=corp,dc=netapp,dc=com?uid'}]
+
+openshift_master_default_subdomain='{{ ansible_default_ipv4.address }}.nip.io'
+
+#openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['85'], 'image-gc-low-threshold': ['80']}
+
+#openshift_enable_service_catalog=true
+#template_service_broker_install=true
+#openshift_template_service_broker_namespaces=['openshift']
+#ansible_service_broker_local_registry_whitelist=['.*-apb$']
+
+openshift_master_audit_config={"enabled": true, "auditFilePath": "/var/log/openpaas-oscp-audit/openpaas-oscp-audit.log", "maximumFileRetentionDays": 14, "maximumFileSizeMegabytes": 500, "maximumRetainedFiles": 5}
+
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+osm_cluster_network_cidr=172.30.0.0/16
+openshift_portal_net=172.20.0.0/16
+
+#openshift_hosted_metrics_deploy=true
+#openshift_metrics_cassandra_storage_type=dynamic
+#openshift_metrics_cassandra_pvc_size=100G
+#openshift_metrics_duration=7
+#openshift_metrics_cassandra_replicas=3
+#openshift_metrics_cassandra_limits_memory=4Gi
+#openshift_metrics_cassandra_limits_cpu=4
+#openshift_metrics_cassandra_requests_memory=4Gi
+#openshift_metrics_cassandra_requests_cpu=1
+
+#openshift_metrics_hawkular_replicas=3
+#openshift_metrics_hawkular_limits_memory=4Gi
+#openshift_metrics_hawkular_limits_cpu=4
+#openshift_metrics_hawkular_requests_memory=4Gi
+#openshift_metrics_hawkular_requests_cpu=1
+
+#openshift_metrics_heapster_limits_memory=4Gi
+#openshift_metrics_heapster_limits_cpu=4
+#openshift_metrics_heapster_requests_memory=4Gi
+#openshift_metrics_heapster_requests_cpu=1
+
+#openshift_hosted_logging_deploy=true
+#openshift_logging_es_pvc_dynamic=true
+#openshift_logging_es_pvc_size=100G
+#openshift_logging_es_cluster_size=3
+#openshift_logging_es_memory_limit=4G
+#openshift_logging_es_cpu_limit=1
+#openshift_logging_curator_default_days=7
+
+
+openshift_hosted_router_replicas=1
+openshift_hosted_registry_replicas=1
+
+openshift_router_selector='region=infra'
+openshift_registry_selector='region=infra'
+
+# host group for masters
+[masters]
+192.168.100.204 openshift_public_hostname="{{ inventory_hostname }}" openshift_hostname="{{ ansible_default_ipv4.address }}"
+
+# host group for etcd
+[etcd]
+192.168.100.204
+
+# Specify load balancer host
+#[lb]
+#192.168.100.204 containerized=false
+
+# host group for nodes, includes region info
+[nodes]
+192.168.100.204 openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true
